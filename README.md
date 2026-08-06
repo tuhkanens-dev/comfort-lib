@@ -12,4 +12,5 @@ compileOnly("org.jetbrains.exposed:exposed-migration-jdbc:1.3.1")
 compileOnly("com.zaxxer:HikariCP:7.1.0")
 compileOnly("org.spongepowered:configurate-yaml:4.2.0")
 compileOnly("com.mysql:mysql-connector-j:9.7.0")
+compileOnly("org.xerial:sqlite-jdbc:3.53.2.0")
 ```
