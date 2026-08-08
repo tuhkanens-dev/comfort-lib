@@ -29,6 +29,7 @@ class DatabaseImpl : DatabaseAPI {
                 }
                 is DatabaseConfig.Mysql -> {
                     val base = MySQLBase(c.configuration)
+                    if (!c.configuration.node("database", "provider").getString("sqlite").equals("mysql")) return
                     bases[DatabaseType.MYSQL] = base
                     DatabaseType.MYSQL
                 }
