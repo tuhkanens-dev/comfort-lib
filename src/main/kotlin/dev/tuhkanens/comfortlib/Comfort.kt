@@ -11,13 +11,16 @@ import dev.tuhkanens.comfortlib.api.implementation.ConfigureImpl
 import dev.tuhkanens.comfortlib.api.implementation.MessagesImpl
 import dev.tuhkanens.comfortlib.api.implementation.UpdateImpl
 import org.slf4j.Logger
+import java.nio.file.Path
 
 object Comfort {
 
     private lateinit var logger: Logger
+    private lateinit var directory: Path
 
-    fun setInstance(logger: Logger) {
+    fun onEnable(logger: Logger, directory: Path) {
         this.logger = logger
+        this.directory = directory
 
         ComfortAPI.apply {
             registerAPI<ConfigureAPI>(ConfigureImpl())
@@ -30,6 +33,10 @@ object Comfort {
 
     fun getLogger(): Logger {
         return logger
+    }
+
+    fun getDirectory(): Path {
+        return directory
     }
 
 }
