@@ -17,7 +17,6 @@ interface DatabaseAPI {
     fun setTables(vararg table: Table)
 
     fun getTables(): Array<Table>
-
     fun getTypes(): List<DatabaseType>
     fun getConfig(type: DatabaseType): DatabaseConfig?
     fun getBase(type: DatabaseType): DatabaseBase?

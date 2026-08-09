@@ -2,18 +2,18 @@ package dev.tuhkanens.comfortlib.database.base
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import dev.tuhkanens.comfortlib.ComfortAPI
+import dev.tuhkanens.comfortlib.api.ConfigAPI
 import dev.tuhkanens.comfortlib.database.DatabaseBase
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.spongepowered.configurate.ConfigurationNode
 
-class MySQLBase(
-    private val configuration: ConfigurationNode
-) : DatabaseBase() {
+class MySQLBase : DatabaseBase() {
 
     private lateinit var dataSource: HikariDataSource
 
     override fun createConnection(): Database {
-        val node = configuration.node("database")
+        val node = ComfortAPI.getAPI<ConfigAPI>().getNode().node("database")
 
         val config = HikariConfig().apply {
             jdbcUrl = "jdbc:mysql://${node.node("host").getString("localhost")}:${node.node("port").getInt(3306)}/${node.node("database").getString("comfort")}?useSSL=false&characterEncoding=utf8"

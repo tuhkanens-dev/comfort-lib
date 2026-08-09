@@ -1,5 +1,7 @@
 package dev.tuhkanens.comfortlib.api.implementation
 
+import dev.tuhkanens.comfortlib.ComfortAPI
+import dev.tuhkanens.comfortlib.api.ConfigAPI
 import dev.tuhkanens.comfortlib.api.DatabaseAPI
 import dev.tuhkanens.comfortlib.database.DatabaseBase
 import dev.tuhkanens.comfortlib.database.DatabaseConfig
@@ -28,9 +30,9 @@ class DatabaseImpl : DatabaseAPI {
                     DatabaseType.SQLITE
                 }
                 is DatabaseConfig.Mysql -> {
-                    if (!c.configuration.node("database", "provider").getString("sqlite").equals("mysql")) return
-
-                    val base = MySQLBase(c.configuration)
+                    val provider = ComfortAPI.getAPI<ConfigAPI>().getNode().node("database, provider")
+                    if (!provider.equals("mysql")) return
+                    val base = MySQLBase()
                     bases[DatabaseType.MYSQL] = base
                     DatabaseType.MYSQL
                 }
@@ -89,7 +91,7 @@ class DatabaseImpl : DatabaseAPI {
     }
 
     override fun transaction(type: DatabaseType, block: () -> Unit) {
-        val db = getDatabase(type) ?: error("Database $type is not connected")
+        val db = getDatabase(type) ?: throw IllegalStateException("Database $type is not connected")
         transaction(db) {
             block()
         }
@@ -102,7 +104,7 @@ class DatabaseImpl : DatabaseAPI {
                 block()
                 return
             }
-            val db = getDatabase(type[index]) ?: error("Database ${type[index]} is not connected")
+            val db = getDatabase(type[index]) ?: throw IllegalStateException("Database ${type[index]} is not connected")
             transaction(db) {
                 executeNested(index + 1)
             }

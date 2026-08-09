@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "dev.tuhkanens.comfortlib"
-version = "1.1.2"
+version = "1.2.0"
 
 repositories {
     mavenCentral()
@@ -23,6 +23,8 @@ dependencies {
     compileOnly("org.spongepowered:configurate-yaml:4.2.0")
     compileOnly("com.mysql:mysql-connector-j:9.7.0")
     compileOnly("org.xerial:sqlite-jdbc:3.53.2.0")
+
+    compileOnly("com.google.code.gson:gson:2.14.0")
 }
 
 kotlin {
