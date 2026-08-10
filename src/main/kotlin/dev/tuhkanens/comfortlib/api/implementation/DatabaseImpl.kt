@@ -30,7 +30,7 @@ class DatabaseImpl : DatabaseAPI {
                     DatabaseType.SQLITE
                 }
                 is DatabaseConfig.Mysql -> {
-                    val provider = ComfortAPI.getAPI<ConfigAPI>().getNode().node("database, provider")
+                    val provider = ComfortAPI.get<ConfigAPI>().getNode().node("database, provider")
                     if (!provider.equals("mysql")) return
                     val base = MySQLBase()
                     bases[DatabaseType.MYSQL] = base

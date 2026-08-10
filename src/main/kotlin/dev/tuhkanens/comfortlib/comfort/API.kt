@@ -7,11 +7,11 @@ abstract class API {
     @PublishedApi
     internal val registry: ConcurrentHashMap<Class<*>, Any> = ConcurrentHashMap()
 
-    inline fun <reified T : Any> registerAPI(implementation: Any) {
+    inline fun <reified T : Any> register(implementation: Any) {
         registry[T::class.java] = implementation
     }
 
-    inline fun <reified T : Any> getAPI(): T {
+    inline fun <reified T : Any> get(): T {
         val implementation: Any = registry[T::class.java]
             ?: throw IllegalStateException("API '${T::class.java}' is not registered!")
         return implementation as T

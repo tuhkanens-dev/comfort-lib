@@ -26,7 +26,7 @@ class UpdateImpl : UpdateAPI {
     override fun checkUpdates(): UpdateCheckResult {
         if (!getEnabled()) return UpdateCheckResult.Unavailable
         val logger = Comfort.getLogger()
-        val configure = ComfortAPI.getAPI<ConfigureAPI>()
+        val configure = ComfortAPI.get<ConfigureAPI>()
         try {
             val projectId: String = configure.getProjectId()
             val currentVersion: String = configure.getVersion()
@@ -89,7 +89,7 @@ class UpdateImpl : UpdateAPI {
     }
 
     override fun getEnabled(): Boolean {
-        val checkUpdates = ComfortAPI.getAPI<ConfigAPI>().getNode().node("check-updates").getBoolean(true)
+        val checkUpdates = ComfortAPI.get<ConfigAPI>().getNode().node("check-updates").getBoolean(true)
         if (checkUpdates) setEnabled(true)
         return enabledCheckUpdates
     }

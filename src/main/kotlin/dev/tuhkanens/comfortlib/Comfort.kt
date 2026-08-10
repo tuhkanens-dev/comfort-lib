@@ -23,17 +23,17 @@ object Comfort {
         this.directory = directory
 
         ComfortAPI.apply {
-            registerAPI<ConfigureAPI>(ConfigureImpl())
+            register<ConfigureAPI>(ConfigureImpl())
 
             if (hasClass("org.spongepowered.configurate") &&
                 hasClass("org.spongepowered.configurate.yaml"))
             {
-                registerAPI<ConfigAPI>(ConfigImpl())
+                register<ConfigAPI>(ConfigImpl())
 
                 if (hasClass("net.kyori.adventure.text.minimessage") &&
                     hasClass("net.kyori.adventure.text.serializer.legacy"))
                 {
-                    registerAPI<MessagesAPI>(MessagesImpl())
+                    register<MessagesAPI>(MessagesImpl())
                 }
             }
 
@@ -41,11 +41,11 @@ object Comfort {
                 hasClass("org.jetbrains.exposed.v1.jdbc") &&
                 hasClass("org.jetbrains.exposed.v1.migration.jdbc"))
             {
-                registerAPI<DatabaseAPI>(DatabaseImpl())
+                register<DatabaseAPI>(DatabaseImpl())
             }
 
             if (hasClass("com.google.gson")) {
-                registerAPI<UpdateAPI>(UpdateImpl())
+                register<UpdateAPI>(UpdateImpl())
             }
         }
     }

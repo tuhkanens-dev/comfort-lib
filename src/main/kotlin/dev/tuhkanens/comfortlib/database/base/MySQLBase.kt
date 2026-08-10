@@ -13,7 +13,7 @@ class MySQLBase : DatabaseBase() {
     private lateinit var dataSource: HikariDataSource
 
     override fun createConnection(): Database {
-        val node = ComfortAPI.getAPI<ConfigAPI>().getNode().node("database")
+        val node = ComfortAPI.get<ConfigAPI>().getNode().node("database")
 
         val config = HikariConfig().apply {
             jdbcUrl = "jdbc:mysql://${node.node("host").getString("localhost")}:${node.node("port").getInt(3306)}/${node.node("database").getString("comfort")}?useSSL=false&characterEncoding=utf8"

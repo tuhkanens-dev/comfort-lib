@@ -6,7 +6,7 @@ import org.jetbrains.exposed.v1.core.Table
 
 abstract class DatabaseBootstrap {
 
-    private val api: DatabaseAPI = ComfortAPI.getAPI<DatabaseAPI>()
+    private val api: DatabaseAPI = ComfortAPI.get<DatabaseAPI>()
 
     open val bases: Array<DatabaseConfig> = emptyArray()
     open val tables: Array<Table> = emptyArray()
