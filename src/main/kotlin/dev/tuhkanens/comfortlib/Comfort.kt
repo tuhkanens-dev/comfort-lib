@@ -24,10 +24,29 @@ object Comfort {
 
         ComfortAPI.apply {
             registerAPI<ConfigureAPI>(ConfigureImpl())
-            registerAPI<ConfigAPI>(ConfigImpl())
-            registerAPI<MessagesAPI>(MessagesImpl())
-            registerAPI<DatabaseAPI>(DatabaseImpl())
-            registerAPI<UpdateAPI>(UpdateImpl())
+
+            if (hasClass("org.spongepowered.configurate") &&
+                hasClass("org.spongepowered.configurate.yaml"))
+            {
+                registerAPI<ConfigAPI>(ConfigImpl())
+
+                if (hasClass("net.kyori.adventure.text.minimessage") &&
+                    hasClass("net.kyori.adventure.text.serializer.legacy"))
+                {
+                    registerAPI<MessagesAPI>(MessagesImpl())
+                }
+            }
+
+            if (hasClass("org.jetbrains.exposed.v1.core") &&
+                hasClass("org.jetbrains.exposed.v1.jdbc") &&
+                hasClass("org.jetbrains.exposed.v1.migration.jdbc"))
+            {
+                registerAPI<DatabaseAPI>(DatabaseImpl())
+            }
+
+            if (hasClass("com.google.gson")) {
+                registerAPI<UpdateAPI>(UpdateImpl())
+            }
         }
     }
 
@@ -37,6 +56,15 @@ object Comfort {
 
     fun getDirectory(): Path {
         return directory
+    }
+
+    private fun hasClass(className: String): Boolean {
+        return try {
+            Class.forName(className)
+            true
+        } catch (e: ClassNotFoundException) {
+            false
+        }
     }
 
 }
