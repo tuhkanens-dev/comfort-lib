@@ -1,3 +1,11 @@
+### About
+Comfort API is a library designed to simplify development, primarily for plugins regardless of their platform — whether it's Spigot or Velocity. The library is also fully compatible with the Fabric mod loader.
+
+The library is currently under active development and receives frequent, sometimes minor, patches. However, breaking changes between updates may occur. Even with major internal overhauls, there won't be a transition to a 2.0.0 development branch anytime soon, as the library is still deep in development, requires further refinement, and is not yet complete.
+
+**TODO:**
+I plan to add bStats metrics, but I'm currently figuring out the best way to integrate them to maintain cross-platform compatibility. My crossplatform-lib already uses bStats, though not entirely.
+
 ### Required dependencies:
 Comfort API includes dependencies with `provided` scope, allowing you to choose how your project handles them, whether by loading them dynamically at runtime or compiling them directly into your build.
 
