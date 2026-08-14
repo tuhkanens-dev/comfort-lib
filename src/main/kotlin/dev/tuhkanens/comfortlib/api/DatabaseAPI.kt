@@ -13,6 +13,7 @@ interface DatabaseAPI {
     fun transaction(type: DatabaseType, block: () -> Unit)
     fun transaction(vararg type: DatabaseType, block: () -> Unit)
 
+    fun setForceDatabases(vararg config: DatabaseConfig)
     fun setDatabases(vararg config: DatabaseConfig)
     fun setTables(vararg table: Table)
 

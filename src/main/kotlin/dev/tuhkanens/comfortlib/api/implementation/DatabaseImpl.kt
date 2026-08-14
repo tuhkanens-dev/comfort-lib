@@ -22,16 +22,25 @@ class DatabaseImpl : DatabaseAPI {
     private val tables: MutableSet<Table> = ConcurrentHashMap.newKeySet()
 
     override fun setDatabases(vararg config: DatabaseConfig) {
+        setDatabases(*config, force = false)
+    }
+
+    override fun setForceDatabases(vararg config: DatabaseConfig) {
+        setDatabases(*config, force = true)
+    }
+
+    private fun setDatabases(vararg config: DatabaseConfig, force: Boolean = false) {
+        if (config.isEmpty()) return
         for (c in config) {
             val type = when (c) {
                 is DatabaseConfig.Sqlite -> {
+                    if (!force && !isProvider(DatabaseType.SQLITE)) return
                     val base = SQLiteBase(c.directory)
                     bases[DatabaseType.SQLITE] = base
                     DatabaseType.SQLITE
                 }
                 is DatabaseConfig.Mysql -> {
-                    val provider = ComfortAPI.get<ConfigAPI>().getNode().node("database, provider")
-                    if (!provider.equals("mysql")) return
+                    if (!force && !isProvider(DatabaseType.MYSQL)) return
                     val base = MySQLBase()
                     bases[DatabaseType.MYSQL] = base
                     DatabaseType.MYSQL
@@ -39,6 +48,20 @@ class DatabaseImpl : DatabaseAPI {
             }
             this.configs[type] = c
         }
+    }
+
+    private fun getProvider(): DatabaseType {
+        val rawProvider = ComfortAPI.get<ConfigAPI>()
+            .getNode()
+            .node("database", "provider")
+            .getString("sqlite")
+            .uppercase()
+        return runCatching { DatabaseType.valueOf(rawProvider) }
+            .getOrDefault(DatabaseType.SQLITE)
+    }
+
+    private fun isProvider(type: DatabaseType): Boolean {
+        return getProvider() == type
     }
 
     override fun setTables(vararg table: Table) {
