@@ -6,7 +6,6 @@ import com.google.gson.JsonParser
 import dev.tuhkanens.comfortlib.Comfort
 import dev.tuhkanens.comfortlib.ComfortAPI
 import dev.tuhkanens.comfortlib.api.ConfigAPI
-import dev.tuhkanens.comfortlib.api.ConfigureAPI
 import dev.tuhkanens.comfortlib.api.UpdateAPI
 import dev.tuhkanens.comfortlib.update.UpdateCheckResult
 import java.lang.module.ModuleDescriptor
@@ -20,16 +19,18 @@ class UpdateImpl : UpdateAPI {
 
     private var enabledCheckUpdates: Boolean = false
 
+    private var projectId: String = "UNKNOWN"
+    private var version: String = "UNKNOWN"
+
     private val client: HttpClient = HttpClient.newBuilder()
         .connectTimeout(Duration.ofSeconds(15L)).build()
 
     override fun checkUpdates(): UpdateCheckResult {
         if (!getEnabled()) return UpdateCheckResult.Unavailable
         val logger = Comfort.getLogger()
-        val configure = ComfortAPI.get<ConfigureAPI>()
         try {
-            val projectId: String = configure.getProjectId()
-            val currentVersion: String = configure.getVersion()
+            val projectId: String = getProjectId()
+            val currentVersion: String = getVersion()
 
             val responseBody: String? = client.send(
                 HttpRequest.newBuilder()
@@ -92,6 +93,22 @@ class UpdateImpl : UpdateAPI {
         val checkUpdates = ComfortAPI.get<ConfigAPI>().getNode().node("check-updates").getBoolean(true)
         if (checkUpdates) setEnabled(true)
         return enabledCheckUpdates
+    }
+
+    override fun setProjectId(projectId: String) {
+        this.projectId = projectId
+    }
+
+    override fun setVersion(version: String) {
+        this.version = version
+    }
+
+    override fun getProjectId(): String {
+        return projectId
+    }
+
+    override fun getVersion(): String {
+        return version
     }
 
 }
