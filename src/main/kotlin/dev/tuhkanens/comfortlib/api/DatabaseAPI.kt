@@ -11,9 +11,9 @@ interface DatabaseAPI {
     fun connect()
     fun disconnect()
 
-    fun transaction(type: DatabaseType, block: () -> Unit)
-    fun transaction(vararg type: DatabaseType, force: Boolean = false, block: () -> Unit)
-    fun transaction(force: Boolean = false, block: () -> Unit)
+    fun <T> transaction(type: DatabaseType, block: () -> T): T
+    fun <T> transaction(vararg type: DatabaseType, force: Boolean = false, block: () -> T): T
+    fun <T> transaction(force: Boolean = false, block: () -> T): T
 
     fun setDatabases(vararg config: DatabaseConfig)
     fun setForceDatabases(vararg config: DatabaseConfig)

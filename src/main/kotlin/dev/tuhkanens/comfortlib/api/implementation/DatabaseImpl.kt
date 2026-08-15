@@ -143,36 +143,40 @@ class DatabaseImpl : DatabaseAPI {
         }
     }
 
-    override fun transaction(type: DatabaseType, block: () -> Unit) {
+    override fun <T> transaction(type: DatabaseType, block: () -> T): T {
         val db = getDatabase(type) ?: throw IllegalStateException("Database $type is not connected")
-        transaction(db) {
+        return transaction(db) {
             block()
         }
     }
 
-    override fun transaction(vararg type: DatabaseType, force: Boolean, block: () -> Unit) {
-        if (type.isEmpty()) return
-        fun executeNested(index: Int) {
+    override fun <T> transaction(vararg type: DatabaseType, force: Boolean, block: () -> T): T {
+        if (type.isEmpty()) {
+            return block()
+        }
+        fun executeNested(index: Int): T {
             if (index >= type.size) {
-                block()
-                return
+                return block()
             }
-            val db = getDatabase(type[index]) ?: throw IllegalStateException("Database ${type[index]} is not connected")
-            val data = getBaseData(type[index]) ?: return
+            val currentType = type[index]
+            val db = getDatabase(currentType) ?: throw IllegalStateException("Database $currentType is not connected")
+            val data = getBaseData(currentType) ?: throw IllegalStateException("DatabaseData for $currentType not found")
 
-            if (force != data.isForced) return
+            if (force != data.isForced) {
+                return executeNested(index + 1)
+            }
 
-            transaction(db) {
+            return transaction(db) {
                 executeNested(index + 1)
             }
         }
 
-        executeNested(0)
+        return executeNested(0)
     }
 
-    override fun transaction(force: Boolean, block: () -> Unit) {
+    override fun <T> transaction(force: Boolean, block: () -> T): T {
         val bases = bases.keys.toTypedArray()
-        transaction(*bases, force = force) {
+        return transaction(*bases, force = force) {
             block()
         }
     }
