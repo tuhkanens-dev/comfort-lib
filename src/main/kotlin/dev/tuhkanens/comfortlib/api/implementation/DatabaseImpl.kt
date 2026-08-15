@@ -5,6 +5,7 @@ import dev.tuhkanens.comfortlib.api.ConfigAPI
 import dev.tuhkanens.comfortlib.api.DatabaseAPI
 import dev.tuhkanens.comfortlib.database.DatabaseBase
 import dev.tuhkanens.comfortlib.database.DatabaseConfig
+import dev.tuhkanens.comfortlib.database.DatabaseData
 import dev.tuhkanens.comfortlib.database.DatabaseType
 import dev.tuhkanens.comfortlib.database.base.MySQLBase
 import dev.tuhkanens.comfortlib.database.base.SQLiteBase
@@ -18,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap
 class DatabaseImpl : DatabaseAPI {
 
     private val configs: ConcurrentHashMap<DatabaseType, DatabaseConfig> = ConcurrentHashMap()
-    private val bases: ConcurrentHashMap<DatabaseType, DatabaseBase> = ConcurrentHashMap()
+    private val bases: ConcurrentHashMap<DatabaseType, DatabaseData> = ConcurrentHashMap()
     private val tables: MutableSet<Table> = ConcurrentHashMap.newKeySet()
 
     override fun setDatabases(vararg config: DatabaseConfig) {
@@ -36,13 +37,13 @@ class DatabaseImpl : DatabaseAPI {
                 is DatabaseConfig.Sqlite -> {
                     if (!force && !isProvider(DatabaseType.SQLITE)) return
                     val base = SQLiteBase(c.directory)
-                    bases[DatabaseType.SQLITE] = base
+                    bases[DatabaseType.SQLITE] = DatabaseData(base, force)
                     DatabaseType.SQLITE
                 }
                 is DatabaseConfig.Mysql -> {
                     if (!force && !isProvider(DatabaseType.MYSQL)) return
                     val base = MySQLBase()
-                    bases[DatabaseType.MYSQL] = base
+                    bases[DatabaseType.MYSQL] = DatabaseData(base, force)
                     DatabaseType.MYSQL
                 }
             }
@@ -50,7 +51,56 @@ class DatabaseImpl : DatabaseAPI {
         }
     }
 
-    private fun getProvider(): DatabaseType {
+    override fun setTables(vararg table: Table) {
+        this.tables.addAll(table)
+    }
+
+    override fun setForce(type: DatabaseType, isForced: Boolean) {
+        getBaseData(type)?.isForced = isForced
+    }
+
+    override fun getTables(): Array<Table> {
+        return tables.toTypedArray()
+    }
+
+    override fun getTypes(): List<DatabaseType> {
+        return bases.keys.toList()
+    }
+
+    override fun getConfig(type: DatabaseType): DatabaseConfig? {
+        return configs[type]
+    }
+
+    override fun getAllBases(): List<DatabaseBase> {
+        return bases.values
+            .map { it.base }
+    }
+
+    override fun getUnforcedBases(): List<DatabaseBase> {
+        return bases.values
+            .filter { !it.isForced }
+            .map { it.base }
+    }
+
+    override fun getForcedBases(): List<DatabaseBase> {
+        return bases.values
+            .filter { it.isForced }
+            .map { it.base }
+    }
+
+    override fun getBaseData(type: DatabaseType): DatabaseData? {
+        return bases[type]
+    }
+
+    override fun getBase(type: DatabaseType): DatabaseBase? {
+        return getBaseData(type)?.base
+    }
+
+    override fun getDatabase(type: DatabaseType): Database? {
+        return getBase(type)?.getDatabase()
+    }
+
+    override fun getProvider(): DatabaseType {
         val rawProvider = ComfortAPI.get<ConfigAPI>()
             .getNode()
             .node("database", "provider")
@@ -60,41 +110,21 @@ class DatabaseImpl : DatabaseAPI {
             .getOrDefault(DatabaseType.SQLITE)
     }
 
-    private fun isProvider(type: DatabaseType): Boolean {
+    override fun isProvider(type: DatabaseType): Boolean {
         return getProvider() == type
     }
 
-    override fun setTables(vararg table: Table) {
-        this.tables.addAll(table)
-    }
-
-    override fun getTables(): Array<Table> {
-        return tables.toTypedArray()
-    }
-
-    override fun getTypes(): List<DatabaseType> {
-        return configs.keys.toList()
-    }
-
-    override fun getConfig(type: DatabaseType): DatabaseConfig? {
-        return configs[type]
-    }
-
-    override fun getBase(type: DatabaseType): DatabaseBase? {
-        return bases[type]
-    }
-
-    override fun getDatabase(type: DatabaseType): Database? {
-        return getBase(type)?.getDatabase()
+    override fun isForced(type: DatabaseType): Boolean {
+        return getBaseData(type)?.isForced ?: false
     }
 
     override fun connect() {
-        bases.values.forEach { it.connect() }
+        bases.values.forEach { it.base.connect() }
 
         if (tables.isNotEmpty()) {
             val tablesArray = tables.toTypedArray()
-            for ((_, base) in bases) {
-                val db = base.getDatabase()
+            for (data in bases.values) {
+                val db = data.base.getDatabase()
                 transaction(db) {
                     val statements = MigrationUtils.statementsRequiredForDatabaseMigration(*tablesArray)
                     if (statements.isNotEmpty()) {
@@ -108,7 +138,7 @@ class DatabaseImpl : DatabaseAPI {
     }
 
     override fun disconnect() {
-        for (type in getTypes()) {
+        for (type in DatabaseType.entries) {
             getBase(type)?.disconnect()
         }
     }
@@ -120,7 +150,7 @@ class DatabaseImpl : DatabaseAPI {
         }
     }
 
-    override fun transaction(vararg type: DatabaseType, block: () -> Unit) {
+    override fun transaction(vararg type: DatabaseType, force: Boolean, block: () -> Unit) {
         if (type.isEmpty()) return
         fun executeNested(index: Int) {
             if (index >= type.size) {
@@ -128,12 +158,23 @@ class DatabaseImpl : DatabaseAPI {
                 return
             }
             val db = getDatabase(type[index]) ?: throw IllegalStateException("Database ${type[index]} is not connected")
+            val data = getBaseData(type[index]) ?: return
+
+            if (force != data.isForced) return
+
             transaction(db) {
                 executeNested(index + 1)
             }
         }
 
         executeNested(0)
+    }
+
+    override fun transaction(force: Boolean, block: () -> Unit) {
+        val bases = bases.keys.toTypedArray()
+        transaction(*bases, force = force) {
+            block()
+        }
     }
 
 }
