@@ -1,0 +1,11 @@
+database:
+  # provider: mysql or sqlite
+  provider: sqlite
+  database: comfort
+  # for mysql
+  port: 3306
+  host: localhost
+  username: root
+  password: ''
+
+check-updates: true
