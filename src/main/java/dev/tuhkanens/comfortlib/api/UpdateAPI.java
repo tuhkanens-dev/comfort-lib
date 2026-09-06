@@ -1,6 +1,6 @@
 package dev.tuhkanens.comfortlib.api;
 
-import dev.tuhkanens.comfortlib.result.UpdateCheckResult;
+import dev.tuhkanens.comfortlib.result.UpdateResult;
 
 public interface UpdateAPI {
     void setEnabled(boolean enabled);
@@ -11,5 +11,5 @@ public interface UpdateAPI {
     String getProjectId();
     String getVersion();
 
-    UpdateCheckResult checkUpdates();
+    UpdateResult checkUpdates();
 }

@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.tuhkanens.comfortlib.Comfort;
 import dev.tuhkanens.comfortlib.api.UpdateAPI;
-import dev.tuhkanens.comfortlib.result.UpdateCheckResult;
+import dev.tuhkanens.comfortlib.result.UpdateResult;
 import org.slf4j.Logger;
 
 import java.lang.module.ModuleDescriptor;
@@ -56,8 +56,8 @@ public class UpdateImpl implements UpdateAPI {
     }
 
     @Override
-    public UpdateCheckResult checkUpdates() {
-        if (!getEnabled()) return UpdateCheckResult.Unavailable.INSTANCE;
+    public UpdateResult checkUpdates() {
+        if (!getEnabled()) return UpdateResult.Unavailable.INSTANCE;
         Logger logger = Comfort.getInstance().getLogger();
         try {
             String projectId = getProjectId();
@@ -75,7 +75,7 @@ public class UpdateImpl implements UpdateAPI {
 
             if (responseBody == null) {
                 logger.error("Update check failed: empty response");
-                return UpdateCheckResult.Unavailable.INSTANCE;
+                return UpdateResult.Unavailable.INSTANCE;
             } else {
                 JsonElement body = JsonParser.parseString(responseBody);
                 if (body.isJsonArray() && !body.getAsJsonArray().isEmpty()) {
@@ -84,22 +84,22 @@ public class UpdateImpl implements UpdateAPI {
                     int compare = compareVersions(latestVersionString, currentVersion);
                     if (compare > 0) {
                         logger.warn("Update available: {} (current: {})", latestVersionString, currentVersion);
-                        return new UpdateCheckResult.Result(true, latestVersionString, false);
+                        return new UpdateResult.Result(true, latestVersionString, false);
                     } else if (compare < 0) {
                         logger.info("You are ahead of release ({})", currentVersion);
-                        return new UpdateCheckResult.Result(false, latestVersionString, true);
+                        return new UpdateResult.Result(false, latestVersionString, true);
                     } else {
                         logger.info("You are up to date ({})", currentVersion);
-                        return new UpdateCheckResult.Result(false, latestVersionString, false);
+                        return new UpdateResult.Result(false, latestVersionString, false);
                     }
                 } else {
                     logger.info("Update check failed: unexpected response");
-                    return UpdateCheckResult.Unavailable.INSTANCE;
+                    return UpdateResult.Unavailable.INSTANCE;
                 }
             }
         } catch (Exception e) {
             logger.error("Update check failed: {}", e.getMessage());
-            return UpdateCheckResult.Unavailable.INSTANCE;
+            return UpdateResult.Unavailable.INSTANCE;
         }
     }
 
