@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "dev.tuhkanens.comfortlib"
-version = "2.1.0"
+version = "2.1.1"
 
 repositories {
     mavenCentral()

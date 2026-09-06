@@ -42,7 +42,7 @@ public final class ComfortAPI {
 
     private static boolean hasClass(String name) {
         try {
-            Class.forName(name);
+            Class.forName(name, false, ComfortAPI.class.getClassLoader());
             return true;
         } catch (ClassNotFoundException e) {
             return false;
